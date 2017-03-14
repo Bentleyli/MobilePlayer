@@ -6,6 +6,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
 
+import com.ljh.mobileplayer.R;
 import com.ljh.mobileplayer.base.BasePager;
 
 /**
@@ -14,15 +15,18 @@ import com.ljh.mobileplayer.base.BasePager;
 public class VideoPager extends BasePager {
 
     private TextView textView;
+    private Context context;
 
     public VideoPager(Context context) {
         super(context);
+        this.context=context;
     }
 
     @Override
     public View initView() {
-        textView=new TextView(context);
-        textView.setGravity(Gravity.CENTER);
+        /*textView=new TextView(context);
+        textView.setGravity(Gravity.CENTER);*/
+        View view=View.inflate(context, R.layout.video_pager,null);
         return textView;
 
     }
