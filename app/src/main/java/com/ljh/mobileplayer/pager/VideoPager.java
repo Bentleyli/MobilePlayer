@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -13,11 +14,13 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.ljh.mobileplayer.R;
+import com.ljh.mobileplayer.activity.SystemVideoPlayer;
 import com.ljh.mobileplayer.adapter.VideoPagerAdapter;
 import com.ljh.mobileplayer.base.BasePager;
 import com.ljh.mobileplayer.bean.MediaItem;
@@ -70,8 +73,29 @@ public class VideoPager extends BasePager {
         listView= (ListView) view.findViewById(R.id.listview);
         tv_nomedia= (TextView) view.findViewById(R.id.tv_nomedia);
         pb_loading= (ProgressBar) view.findViewById(R.id.pb_loading);
+
+        listView.setOnItemClickListener(new MyOnItemClickListener());
         return view;
 
+    }
+
+    class MyOnItemClickListener implements AdapterView.OnItemClickListener {
+
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            MediaItem mediaItem = mediaItems.get(position);
+            //Toast.makeText(context, "mediaItem=="+mediaItem.toString(), Toast.LENGTH_SHORT).show();
+
+            //1.调起系统所有的播放-隐式意图
+            /*Intent intent = new Intent();
+            intent.setDataAndType(Uri.parse(mediaItem.getData()),"video*//*");
+            context.startActivity(intent);*/
+
+            //2.调用自己写的播放器-显示意图--一个播放地址
+            Intent intent = new Intent(context,SystemVideoPlayer.class);
+            intent.setDataAndType(Uri.parse(mediaItem.getData()),"video/*");
+            context.startActivity(intent);
+        }
     }
 
     @Override
