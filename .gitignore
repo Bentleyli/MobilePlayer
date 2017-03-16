@@ -6,3 +6,9 @@
 .DS_Store
 /build
 /captures
+.classpath
+.gitignore
+.project
+.settings
+
+.gitignore

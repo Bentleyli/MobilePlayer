@@ -1,6 +1,10 @@
 package com.ljh.mobileplayer.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,7 +21,12 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.ljh.mobileplayer.R;
+import com.ljh.mobileplayer.bean.MediaItem;
 import com.ljh.mobileplayer.utils.Utils;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Bentley on 2017/3/14.
@@ -46,6 +55,9 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
     private Button btnVideoSwitchScreen;
 
     private Utils utils;
+    private MyReceiver receiver;
+    private ArrayList<MediaItem> mediaItems;
+    private int position;
 
     /**
      * Find the Views in the layout<br />
@@ -131,6 +143,9 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
                     seekbarVideo.setProgress(currentPosition);
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
 
+                    //设置系统时间
+                    tvSystemTime.setText(getSystemTime());
+
                     //3.每秒更新一次
                     handler.removeMessages(PROGRESS);
                     handler.sendEmptyMessageDelayed(PROGRESS,1000);
@@ -139,24 +154,86 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         }
     };
 
+    private String getSystemTime() {
+        SimpleDateFormat format=new SimpleDateFormat("HH:mm:ss");
+        return format.format(new Date());
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_system_video_player);
-        utils=new Utils();
+        initData();
         findViews();
         setListener();
+        getData();
 
-
-        //得到播放地址
-        uri=getIntent().getData();
-        if (uri!=null){
-            videoView.setVideoURI(uri);
-        }
-
+        setData();
         //设置控制面板
         videoView.setMediaController(new MediaController(this));
+    }
+
+    private void setData() {
+        if (mediaItems!=null&&mediaItems.size()>0){
+            MediaItem mediaItem = mediaItems.get(position);
+            tvName.setText(mediaItem.getName());
+            videoView.setVideoPath(mediaItem.getData());
+        }else if (uri!=null){
+            tvName.setText(uri.toString());
+            videoView.setVideoURI(uri);
+
+        }else{
+            Toast.makeText(SystemVideoPlayer.this, "没有可以播放的数据", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    private void getData() {
+        //得到播放地址
+        uri=getIntent().getData();
+
+        mediaItems= (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
+        position=getIntent().getIntExtra("position",0);
+
+    }
+
+    private void initData() {
+        utils=new Utils();
+        //注册电量广播
+        receiver=new MyReceiver();
+        IntentFilter intentFilter=new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        registerReceiver(receiver,intentFilter);
+    }
+
+    class MyReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int level=intent.getIntExtra("level",10);
+            setBattery(level);
+        }
+    }
+
+    private void setBattery(int level) {
+        if (level<=0){
+            ivBattery.setImageResource(R.drawable.ic_battery_0);
+        }else if (level<=10){
+            ivBattery.setImageResource(R.drawable.ic_battery_10);
+        }else if (level<=20){
+            ivBattery.setImageResource(R.drawable.ic_battery_20);
+        }else if (level<=40){
+            ivBattery.setImageResource(R.drawable.ic_battery_40);
+        }else if (level<=60){
+            ivBattery.setImageResource(R.drawable.ic_battery_60);
+        }else if (level<=80){
+            ivBattery.setImageResource(R.drawable.ic_battery_80);
+        }else if (level<=100){
+            ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }else{
+            ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }
     }
 
     private void setListener() {
@@ -237,5 +314,14 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         public void onStopTrackingTouch(SeekBar seekBar) {
 
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (receiver!=null){
+            unregisterReceiver(receiver);
+        }
+
+        super.onDestroy();
     }
 }
