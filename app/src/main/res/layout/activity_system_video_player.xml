@@ -5,12 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <VideoView
+    <com.ljh.mobileplayer.view.VideoView
         android:layout_centerInParent="true"
         android:id="@+id/videoview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <include layout="@layout/media_controller"/>
+    <include layout="@layout/media_controller" android:id="@+id/media_controller"/>
 
 </RelativeLayout>
