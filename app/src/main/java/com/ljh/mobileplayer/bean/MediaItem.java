@@ -3,9 +3,7 @@ package com.ljh.mobileplayer.bean;
 import java.io.Serializable;
 
 /**
- * 作者：杨光福 on 2016/7/18 09:16
- * 微信：yangguangfu520
- * QQ号：541433511
+ *
  * 作用：代表一个视频和音频
  */
 public class MediaItem implements Serializable {

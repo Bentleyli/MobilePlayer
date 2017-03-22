@@ -99,6 +99,10 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
      * 是否是静音
      */
     private boolean isMute=false;
+    /**
+     * 是否是网络的uri
+     */
+    private boolean isNetUri;
 
     /**
      * Find the Views in the layout<br />
@@ -197,6 +201,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             if (position>=0){
                 MediaItem mediaItem=mediaItems.get(position);
                 tvName.setText(mediaItem.getName());
+                isNetUri=utils.isNetUri(mediaItem.getData());
                 videoView.setVideoPath(mediaItem.getData());
                 //设置按钮状态
                 setButtonState();
@@ -214,6 +219,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             if (position<mediaItems.size()){
                 MediaItem mediaItem=mediaItems.get(position);
                 tvName.setText(mediaItem.getName());
+                isNetUri=utils.isNetUri(mediaItem.getData());
                 videoView.setVideoPath(mediaItem.getData());
                 //设置按钮状态
                 setButtonState();
@@ -291,6 +297,18 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
                     //设置系统时间
                     tvSystemTime.setText(getSystemTime());
 
+                    //缓存进度的更新
+                    if (isNetUri){
+                        //只有网络资源才有缓冲
+                        int buffer=videoView.getBufferPercentage();//0-100
+                        int totalBuffer=buffer*seekbarVideo.getMax();
+                        int secondaryProgress=totalBuffer/100;
+                        seekbarVideo.setSecondaryProgress(secondaryProgress);
+                    }else{
+                        //本地视频没有缓冲效果
+                        seekbarVideo.setSecondaryProgress(0);
+                    }
+
                     //3.每秒更新一次
                     handler.removeMessages(PROGRESS);
                     handler.sendEmptyMessageDelayed(PROGRESS,1000);
@@ -323,9 +341,11 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         if (mediaItems!=null&&mediaItems.size()>0){
             MediaItem mediaItem = mediaItems.get(position);
             tvName.setText(mediaItem.getName());
+            isNetUri=utils.isNetUri(mediaItem.getData());
             videoView.setVideoPath(mediaItem.getData());
         }else if (uri!=null){
             tvName.setText(uri.toString());
+            isNetUri=utils.isNetUri(uri.toString());
             videoView.setVideoURI(uri);
 
         }else{
