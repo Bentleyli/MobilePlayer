@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -619,9 +620,42 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         super.onDestroy();
     }
 
+    private float startY;
+    //屏幕的高
+    private float touchRange;
+
+    //当一按下的音量
+    private int mVol;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
+
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                //手指按下
+                startY=event.getY();
+                mVol=am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                touchRange=Math.min(screenWidth,screenHeight);
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                //手指移动
+                float endY=event.getY();
+                float distanceY=startY-endY;
+                float delta=(distanceY/touchRange)*maxVolume;
+                int voice= (int) Math.min(Math.max(mVol+delta,0),maxVolume);
+                if (delta!=0){
+                    isMute=false;
+                    updateVolume(voice,isMute);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                //手指离开
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+                break;
+        }
+
         return super.onTouchEvent(event);
     }
 
@@ -636,5 +670,27 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         isShowMediaController=false;
     }
 
-
+    /**
+     * 监听物理键，实现声音的调节大小
+     * @param keyCode
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode==KeyEvent.KEYCODE_VOLUME_DOWN){
+            currentVolume--;
+            updateVolume(currentVolume,false);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+            return true;
+        }else if (keyCode==KeyEvent.KEYCODE_VOLUME_UP){
+            currentVolume++;
+            updateVolume(currentVolume,false);
+            handler.removeMessages(HIDE_MEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 }
