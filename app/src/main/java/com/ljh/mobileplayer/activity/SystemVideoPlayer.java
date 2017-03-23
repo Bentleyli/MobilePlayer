@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -63,6 +64,8 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
     private Button btnVideoStartPause;
     private Button btnVideoNext;
     private Button btnVideoSwitchScreen;
+    private TextView tv_netspeed;
+    private LinearLayout ll_buffer;
 
     private Utils utils;
     private MyReceiver receiver;
@@ -129,6 +132,8 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         btnVideoStartPause = (Button)findViewById( R.id.btn_video_start_pause );
         btnVideoNext = (Button)findViewById( R.id.btn_video_next );
         btnVideoSwitchScreen = (Button)findViewById( R.id.btn_video_switch_screen );
+        tv_netspeed = (TextView) findViewById(R.id.tv_netspeed);
+        ll_buffer = (LinearLayout) findViewById(R.id.ll_buffer);
 
         btnVoice.setOnClickListener( this );
         btnSwitchPlayer.setOnClickListener( this );
@@ -517,6 +522,28 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
 
         //设置音量seekbar状态变化的监听
         seekbarVoice.setOnSeekBarChangeListener(new VoiceOnSeekBarChangeListener());
+
+        //监听视频播放卡顿--使用系统api
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            videoView.setOnInfoListener(new MyOnInfoListener());
+        }
+    }
+
+    private class MyOnInfoListener implements MediaPlayer.OnInfoListener {
+        @Override
+        public boolean onInfo(MediaPlayer mp, int what, int extra) {
+            switch (what){
+                case MediaPlayer.MEDIA_INFO_BUFFERING_START://视频卡顿，拖动卡顿
+                    //Toast.makeText(SystemVideoPlayer.this, "视频卡了", Toast.LENGTH_SHORT).show();
+                    ll_buffer.setVisibility(View.VISIBLE);
+                    break;
+                case MediaPlayer.MEDIA_INFO_BUFFERING_END://视频卡顿结束，拖动卡顿结束
+                    Toast.makeText(SystemVideoPlayer.this, "不卡了", Toast.LENGTH_SHORT).show();
+                    ll_buffer.setVisibility(View.GONE);
+                    break;
+            }
+            return true;
+        }
     }
 
     class MyOnPreparedListener implements MediaPlayer.OnPreparedListener{
@@ -713,4 +740,6 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         }
         return super.onKeyDown(keyCode, event);
     }
+
+
 }
