@@ -16,7 +16,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void startAllPlayer(View view){
         Intent intent = new Intent();
-        intent.setDataAndType(Uri.parse("http://192.168.31.186:8080/thanksforyourself.mp4"),"video/*");
+//        intent.setDataAndType(Uri.parse("http://192.168.31.186:8080/thanksforyourself.mp4"),"video/*");
+        intent.setDataAndType(Uri.parse("http://vfx.mtime.cn/Video/2017/03/10/mp4/170310094908405891.mp4"),"video/*");
         startActivity(intent);
     }
 }
