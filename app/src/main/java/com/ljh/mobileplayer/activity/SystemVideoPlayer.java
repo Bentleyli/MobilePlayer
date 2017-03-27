@@ -1,8 +1,10 @@
 package com.ljh.mobileplayer.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -13,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -176,6 +179,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             updateVolume(currentVolume,isMute);
         } else if ( v == btnSwitchPlayer ) {
             // Handle clicks for btnSwitchPlayer
+            showSwitchPlayerDialog();
         } else if ( v == btnExit ) {
             // Handle clicks for btnExit
             finish();
@@ -195,6 +199,20 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
 
         handler.removeMessages(HIDE_MEDIACONTROLLER);
         handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+    }
+
+    private void showSwitchPlayerDialog() {
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setTitle("系统播放器提示您");
+        builder.setMessage("当您播放视频，有声音没有画面的时候，请切换万能播放器播放");
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startVitamioPlayer();
+            }
+        });
+        builder.setNegativeButton("取消",null);
+        builder.show();
     }
 
     private void startAndPause() {
@@ -633,7 +651,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             startVitamioPlayer();
             //2、播放网络视频的时候，网络中断--1.如果网络确实断了，可以提示用户网络断开；2.网络断断续续，重新播放
             //3、播放的时候本地文件中间有空白--下载做完成
-            return false;
+            return true;
         }
     }
 
@@ -643,7 +661,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
      * b.关闭系统播放器
      */
     private void startVitamioPlayer() {
-
+        Log.d("TAG","跳转vitamio");
         if (videoView!=null){
             videoView.stopPlayback();
         }

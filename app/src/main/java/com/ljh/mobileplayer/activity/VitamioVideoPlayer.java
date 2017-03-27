@@ -1,8 +1,10 @@
 package com.ljh.mobileplayer.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -180,6 +182,7 @@ public class VitamioVideoPlayer extends Activity implements View.OnClickListener
             updateVolume(currentVolume,isMute);
         } else if ( v == btnSwitchPlayer ) {
             // Handle clicks for btnSwitchPlayer
+            showSwitchPlayerDialog();
         } else if ( v == btnExit ) {
             // Handle clicks for btnExit
             finish();
@@ -199,6 +202,41 @@ public class VitamioVideoPlayer extends Activity implements View.OnClickListener
 
         handler.removeMessages(HIDE_MEDIACONTROLLER);
         handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+    }
+
+    private void showSwitchPlayerDialog() {
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setTitle("万能播放器提醒您提示您");
+        builder.setMessage("当您播放视频，有花屏的时候，可以尝试使用系统播放器播放");
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startSystemPlayer();
+            }
+        });
+        builder.setNegativeButton("取消",null);
+        builder.show();
+    }
+
+    private void startSystemPlayer() {
+        if (videoView!=null){
+            videoView.stopPlayback();
+        }
+        Intent intent = new Intent(this,SystemVideoPlayer.class);
+        if(mediaItems!=null&&mediaItems.size()>0){
+
+            //intent.setDataAndType(Uri.parse(mediaItem.getData()),"video*//*");
+            Bundle bundle=new Bundle();
+            bundle.putSerializable("videolist",mediaItems);
+            intent.putExtras(bundle);
+            intent.putExtra("position",position);
+
+        }else if (uri!=null){
+            intent.setData(uri);
+        }
+        startActivity(intent);
+
+        finish();
     }
 
     private void startAndPause() {
@@ -634,11 +672,25 @@ public class VitamioVideoPlayer extends Activity implements View.OnClickListener
         @Override
         public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
 //            Toast.makeText(SystemVideoPlayer.this, "播放出错了", Toast.LENGTH_SHORT).show();
+            showErrorDialog();
             //出错情况：1、播放的视频格式不支持--跳转到万能播放器继续播放
             //2、播放网络视频的时候，网络中断--1.如果网络确实断了，可以提示用户网络断开；2.网络断断续续，重新播放
             //3、播放的时候本地文件中间有空白--下载做完成
-            return false;
+            return true;
         }
+    }
+
+    private void showErrorDialog() {
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setTitle("提示");
+        builder.setMessage("抱歉，无法播放该视频！");
+        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        builder.show();
     }
 
     class MyOnCompletionListener implements MediaPlayer.OnCompletionListener{
