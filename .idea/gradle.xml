@@ -13,6 +13,9 @@
             <option value="$PROJECT_DIR$/startallplayer" />
             <option value="$PROJECT_DIR$/vitamio" />
             <option value="$PROJECT_DIR$/vitamio-sample" />
+            <option value="$PROJECT_DIR$/xListView" />
+            <option value="$PROJECT_DIR$/xUtils3_sample" />
+            <option value="$PROJECT_DIR$/xutils" />
           </set>
         </option>
         <option name="myModules">
@@ -22,6 +25,9 @@
             <option value="$PROJECT_DIR$/startallplayer" />
             <option value="$PROJECT_DIR$/vitamio" />
             <option value="$PROJECT_DIR$/vitamio-sample" />
+            <option value="$PROJECT_DIR$/xListView" />
+            <option value="$PROJECT_DIR$/xUtils3_sample" />
+            <option value="$PROJECT_DIR$/xutils" />
           </set>
         </option>
       </GradleProjectSettings>

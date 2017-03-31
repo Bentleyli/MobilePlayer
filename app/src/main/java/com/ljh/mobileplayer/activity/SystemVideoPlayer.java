@@ -386,7 +386,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         }
     };
 
-    private String getSystemTime() {
+    public  String getSystemTime() {
         SimpleDateFormat format=new SimpleDateFormat("HH:mm:ss");
         return format.format(new Date());
     }
@@ -768,6 +768,10 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
 
     @Override
     protected void onDestroy() {
+
+        //移除所有消息
+        handler.removeCallbacksAndMessages(null);
+
         if (receiver!=null){
             unregisterReceiver(receiver);
         }
