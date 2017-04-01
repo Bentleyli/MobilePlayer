@@ -3,6 +3,7 @@ package com.ljh.mobileplayer.pager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -14,6 +15,7 @@ import com.ljh.mobileplayer.activity.SystemVideoPlayer;
 import com.ljh.mobileplayer.adapter.NetVideoPagerAdapter;
 import com.ljh.mobileplayer.base.BasePager;
 import com.ljh.mobileplayer.bean.MediaItem;
+import com.ljh.mobileplayer.utils.CacheUtils;
 import com.ljh.mobileplayer.utils.Constants;
 import com.ljh.mobileplayer.view.XListView;
 
@@ -138,6 +140,10 @@ public class NetVideoPager extends BasePager {
         super.initData();
 
         Log.d("TAG","网络视频页面被初始化");
+        String saveJson=CacheUtils.getString(context,Constants.NET_URL);
+        if (!TextUtils.isEmpty(saveJson)){
+            processData(saveJson);
+        }
         getDataFromNet();
 
     }
@@ -151,13 +157,17 @@ public class NetVideoPager extends BasePager {
             @Override
             public void onSuccess(String result) {
                 Log.d("TAG","联网成功=="+result);
+                //缓存数据
+                CacheUtils.putString(context,Constants.NET_URL,result);
                 //主线程
                 processData(result);
+
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.d("TAG","联网失败=="+ex.getMessage());
+                showData();
             }
 
             @Override
@@ -176,23 +186,9 @@ public class NetVideoPager extends BasePager {
 
         if (!isLoadMore){
             mediaItems=parseJson(json);
+            showData();
 
-            //设置适配器
-            if (mediaItems!=null&&mediaItems.size()>0){
-                //有数据
-                //设置适配器
-                netVideoPagerAdapter=new NetVideoPagerAdapter(context,mediaItems);
-                mListview.setAdapter(netVideoPagerAdapter);
-                onLoad();
-                //把文本隐藏
-                mTv_nonet.setVisibility(View.GONE);
-            }else {
-                //没有数据
-                //文本显示
-                mTv_nonet.setVisibility(View.VISIBLE);
-            }
-            //ProgressBar隐藏
-            mProgressBar.setVisibility(View.GONE);
+
         }else{
             //加载更多
             //要把得到的更多的数据添加到原来的集合中
@@ -204,6 +200,25 @@ public class NetVideoPager extends BasePager {
             onLoad();
         }
 
+    }
+
+    private void showData() {
+        //设置适配器
+        if (mediaItems!=null&&mediaItems.size()>0){
+            //有数据
+            //设置适配器
+            netVideoPagerAdapter=new NetVideoPagerAdapter(context,mediaItems);
+            mListview.setAdapter(netVideoPagerAdapter);
+            onLoad();
+            //把文本隐藏
+            mTv_nonet.setVisibility(View.GONE);
+        }else {
+            //没有数据
+            //文本显示
+            mTv_nonet.setVisibility(View.VISIBLE);
+        }
+        //ProgressBar隐藏
+        mProgressBar.setVisibility(View.GONE);
     }
 
     private void onLoad() {
