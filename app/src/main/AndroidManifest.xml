@@ -244,6 +244,8 @@
             android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:configChanges="keyboardHidden|screenSize|orientation"></activity>
+
+        <activity android:name=".activity.AudioPlayerActivity"/>
     </application>
 
 </manifest>
