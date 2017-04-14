@@ -10,109 +10,105 @@
 
         <ImageView
             android:id="@+id/iv_icon"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/now_playing_matrix_01"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/now_playing_matrix_01" />
 
         <TextView
             android:id="@+id/tv_artist"
-            android:text="演唱者"
-            android:textSize="14sp"
-            android:textColor="#ffffff"
-            android:layout_marginTop="40dp"
-            android:layout_centerHorizontal="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="40dp"
+            android:textColor="#ffffff"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tv_name"
-            android:text="歌名"
-            android:textSize="18sp"
-            android:textColor="#ffffff"
-            android:layout_marginTop="60dp"
-            android:layout_centerHorizontal="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="60dp"
+            android:textColor="#ffffff"
+            android:textSize="18sp" />
     </RelativeLayout>
 
     <LinearLayout
-        android:layout_marginBottom="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:orientation="vertical">
 
         <TextView
-            android:layout_gravity="right"
+            android:id="@+id/tv_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00/30:00"
-            android:id="@+id/tv_time"
+            android:layout_gravity="right"
             android:layout_marginRight="8dp"
+            android:text="00:00/30:00"
             android:textColor="@android:color/white"
-            android:textSize="14sp"/>
+            android:textSize="14sp" />
 
         <SeekBar
+            android:id="@+id/seekbar_audio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginLeft="6dp"
             android:layout_marginRight="6dp"
-            android:id="@+id/seekbar_audio"
-            android:minHeight="5dp"
-            android:maxHeight="5dp"
-            android:thumb="@drawable/seek_thumb"
-            android:progressDrawable="@drawable/audio_progress_horizontal"
             android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:maxHeight="5dp"
+            android:minHeight="5dp"
+            android:progressDrawable="@drawable/audio_progress_horizontal"
+            android:thumb="@drawable/seek_thumb" />
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:layout_height="wrap_content">
+            android:orientation="horizontal">
 
             <Button
-                android:layout_weight="1"
                 android:id="@+id/btn_audio_playmode"
-                android:background="@drawable/btn_audio_playmode_normal_selector"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/btn_audio_playmode_normal_selector" />
 
             <Button
-                android:layout_weight="1"
                 android:id="@+id/btn_audio_pre"
-                android:background="@drawable/btn_audio_pre_selector"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/btn_audio_pre_selector" />
 
             <Button
-                android:layout_weight="1"
                 android:id="@+id/btn_audio_start_pause"
-                android:background="@drawable/btn_audio_pause_selector"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/btn_audio_pause_selector" />
 
             <Button
-                android:layout_weight="1"
                 android:id="@+id/btn_audio_next"
-                android:background="@drawable/btn_audio_next_selector"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/btn_audio_next_selector" />
 
             <Button
-                android:layout_weight="1"
                 android:id="@+id/btn_lyric"
-                android:background="@drawable/btn_lyric_selector"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/btn_lyric_selector" />
 
 
         </LinearLayout>
 
 
-
     </LinearLayout>
-
 
 
 </RelativeLayout>
