@@ -1,13 +1,17 @@
 package com.ljh.mobileplayer.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.view.View;
 import android.widget.Button;
@@ -18,12 +22,17 @@ import android.widget.TextView;
 import com.ljh.mobileplayer.IMusicPlayerService;
 import com.ljh.mobileplayer.R;
 import com.ljh.mobileplayer.service.MusicPlayerService;
+import com.ljh.mobileplayer.utils.Utils;
 
 /**
  * Created by Bentley on 2017/4/1.
  */
 public class AudioPlayerActivity extends Activity implements View.OnClickListener {
 
+    /**
+     * 进度更新
+     */
+    private static final int PROGRESS = 1;
     private int position;
     private IMusicPlayerService service;//服务的代理类，通过它可以调用服务的方法
 
@@ -38,42 +47,15 @@ public class AudioPlayerActivity extends Activity implements View.OnClickListene
     private Button btnAudioNext;
     private Button btnLyric;
 
-    private ServiceConnection conn = new ServiceConnection() {
+    private MyReceiver receiver;
 
-        /**
-         * 当连接成功的时候回调这个方法
-         * @param name
-         * @param iBinder
-         */
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder iBinder) {
-            service = IMusicPlayerService.Stub.asInterface(iBinder);
-            if (service != null) {
-                try {
-                    service.openAudio(position);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+    private Utils utils;
+    /**
+     * true:从状态栏进入，不需要重新播放
+     * false:从播放列表进入
+     */
+    private boolean notification;
 
-        /**
-         * 当连接断开的时候回调这个方法
-         * @param name
-         */
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            try {
-                if (service != null) {
-                    service.stop();
-                    service = null;
-                }
-
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-    };
 
     /**
      * Find the Views in the layout<br />
@@ -103,6 +85,34 @@ public class AudioPlayerActivity extends Activity implements View.OnClickListene
         btnAudioStartPause.setOnClickListener(this);
         btnAudioNext.setOnClickListener(this);
         btnLyric.setOnClickListener(this);
+
+        //设置视频的拖动
+        seekbarAudio.setOnSeekBarChangeListener(new MyOnSeekBarChangeListener());
+    }
+
+    class MyOnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener {
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (fromUser){
+                //拖动进度
+                try {
+                    service.seekTo(progress);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+
+        }
     }
 
     /**
@@ -127,7 +137,7 @@ public class AudioPlayerActivity extends Activity implements View.OnClickListene
                         service.pause();
                         //按钮——播放
                         btnAudioStartPause.setBackgroundResource(R.drawable.btn_audio_start_selector);
-                    }else {
+                    } else {
                         //播放
                         service.start();
                         //按钮——暂停
@@ -144,14 +154,116 @@ public class AudioPlayerActivity extends Activity implements View.OnClickListene
         }
     }
 
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case PROGRESS:
+
+                    try {
+                        //1.得到当前进度
+                        int currentPosition = service.getCurrentPosition();
+
+                        //2.设置seekbar.setProgress(进度)
+                        seekbarAudio.setProgress(currentPosition);
+                        //3.时间进度更新
+                        tvTime.setText(utils.stringForTime(currentPosition)+"/"+utils.stringForTime(service.getDuration()));
+                        //4.每秒更新一次
+                        handler.removeMessages(PROGRESS);
+                        handler.sendEmptyMessageDelayed(PROGRESS,1000);
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initView();
+        initData();
         findViews();
         getData();
         bindAndStartService();
+    }
+
+    private ServiceConnection conn = new ServiceConnection() {
+
+        /**
+         * 当连接成功的时候回调这个方法
+         * @param name
+         * @param iBinder
+         */
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
+            service = IMusicPlayerService.Stub.asInterface(iBinder);
+
+            if (service != null) {
+                try {
+                    if (!notification){
+                        //从列表
+                        service.openAudio(position);
+                    }else {
+                        //从状态栏
+                        showViewData();
+                    }
+
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        /**
+         * 当连接断开的时候回调这个方法
+         * @param name
+         */
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            try {
+                if (service != null) {
+                    service.stop();
+                    service = null;
+                }
+
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    private void initData() {
+        utils = new Utils();
+        //注册广播
+        receiver = new MyReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(MusicPlayerService.OPENAUDIO);
+        registerReceiver(receiver, intentFilter);
+    }
+
+    class MyReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            showViewData();
+        }
+    }
+
+    private void showViewData() {
+        try {
+            tvArtist.setText(service.getAritist());
+            tvName.setText(service.getName());
+            //设置进度条的最大值
+            seekbarAudio.setMax(service.getDuration());
+
+            //发消息
+            handler.sendEmptyMessage(PROGRESS);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -164,10 +276,23 @@ public class AudioPlayerActivity extends Activity implements View.OnClickListene
 
     //得到数据
     private void getData() {
-        position = getIntent().getIntExtra("position", 0);
+        notification = getIntent().getBooleanExtra("Notification",false);
+        if (!notification){
+            position = getIntent().getIntExtra("position", 0);
+        }
+
     }
 
-    private void initView() {
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        handler.removeCallbacksAndMessages(null);
+        if (receiver != null) {
+            unregisterReceiver(receiver);
+            receiver = null;
+        }
 
     }
 }
